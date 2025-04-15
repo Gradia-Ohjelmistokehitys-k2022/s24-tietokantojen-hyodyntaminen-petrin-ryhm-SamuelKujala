@@ -9,6 +9,6 @@ namespace Opiskelijat_T2.Models
     public class Ryhma
     {
         public int Id { get; set; }
-        public string Nimi { get; set; }
+        public string ryhmannimi { get; set; }
     }
 }

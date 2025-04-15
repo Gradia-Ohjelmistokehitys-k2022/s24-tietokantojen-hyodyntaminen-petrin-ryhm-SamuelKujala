@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
 using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
+using System.Security.Cryptography;
 using Opiskelijat_T2.Models;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Opiskelijat_T2
 {
@@ -21,26 +20,48 @@ namespace Opiskelijat_T2
         public Form1()
         {
             InitializeComponent();
-            ItemsToDataGrid();
-            ItemsToComboBoxRyhma();
         }
 
-
-        public void ItemsToDataGrid()
+        private void Form1_Load(object sender, EventArgs e)
         {
-            using (MySqlConnection conn = new MySqlConnection(connection))
+            TestConnection();
+            DataToDataGrid();
+            DataToComboBox();
+        }
+
+        public void TestConnection()
+        {
+            try
+            {
+                using (MySqlConnection mySqlConnection = new MySqlConnection(connection))
+                {
+                    mySqlConnection.Open();
+                    Console.WriteLine("Connection succesfull");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+
+        public void DataToDataGrid()
+        {
+            using (MySqlConnection mySqlConnection = new MySqlConnection(connection))
             {
                 List<Opiskelija> opiskelijat = new List<Opiskelija>();
-                conn.Open();
+                mySqlConnection.Open();
                 string query = "select * from opiskelijat";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+
+                using (MySqlCommand cmd = new MySqlCommand(query, mySqlConnection))
                 using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        Opiskelija o = new Opiskelija
+                        Opiskelija o = new Opiskelija()
                         {
-                            Id = reader.GetInt32("opiskelija_id"),
+                            Tunniste = reader.GetInt32("opiskelija_id"),
                             Etunimi = reader.GetString("etunimi"),
                             Sukunimi = reader.GetString("sukunimi"),
                             RyhmaId = reader.GetInt32("ryhma_ID")
@@ -48,136 +69,104 @@ namespace Opiskelijat_T2
                         opiskelijat.Add(o);
                     }
 
+                    dataGridView1.DataSource = opiskelijat;
+
                 }
-                dataGridView1.DataSource = opiskelijat;
             }
         }
 
-        public void ItemsToComboBoxRyhma()
+        public void DataToComboBox()
         {
-            using (MySqlConnection conn = new MySqlConnection(connection))
+            using (MySqlConnection mySqlConnection = new MySqlConnection(connection))
             {
-                List<Opiskelija> opiskelijat = new List<Opiskelija>();
-                conn.Open();
+                List<Ryhma> ryhmat = new List<Ryhma>();
+                mySqlConnection.Open();
                 string query = "select * from opiskelijaryhma";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+
+                using (MySqlCommand cmd = new MySqlCommand(query, mySqlConnection))
                 using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        Ryhma o = new Ryhma
+                        Ryhma o = new Ryhma()
                         {
                             Id = reader.GetInt32("opiskelijaryhmä_ID"),
-                            Nimi = reader.GetString("nimi"),
+                            ryhmannimi = reader.GetString("nimi")
                         };
-                        comboBox1.Items.Add(o.Nimi);
+                        ryhmat.Add(o);
                     }
-
+                    ryhmat.Insert(0, new Ryhma { Id = -1, ryhmannimi = "--- Valitse ryhmä ---" });
+                    comboBox1.DataSource = ryhmat;
+                    comboBox1.DisplayMember = "ryhmannimi";  
+                    comboBox1.ValueMember = "Id";
                 }
             }
         }
-        
-            public void DataGridRemove()
-            {
-                int selectedRowIndex = dataGridView1.SelectedRows[0].Index;
-                string etunimi = dataGridView1.Rows[selectedRowIndex].Cells["etunimi"].Value.ToString();
-                string sukunimi = dataGridView1.Rows[selectedRowIndex].Cells["sukunimi"].Value.ToString();
-                int ryhma_ID = Convert.ToInt32(dataGridView1.Rows[selectedRowIndex].Cells["ryhma_ID"].Value);
 
-            using (MySqlConnection conn = new MySqlConnection(connection))
+        private void btnAddStudent_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtEtunimi.Text) && !string.IsNullOrEmpty(txtSukunimi.Text))
+            {
+                if ((int)comboBox1.SelectedValue < 0)
                 {
-                    conn.Open();
-                    string query = "delete from opiskelijat where etunimi = @etunimi and sukunimi = @sukunimi and ryhma_ID = @ryhma_ID";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    MessageBox.Show("Valitse Ryhmä luodaksesi oppilaan");
+                }
+                else
+                {
+                    using (MySqlConnection mySqlConnection = new MySqlConnection(connection))
                     {
-                        cmd.Parameters.AddWithValue("@etunimi", etunimi);
-                        cmd.Parameters.AddWithValue("@sukunimi", sukunimi);
-                        cmd.Parameters.AddWithValue("@ryhma_ID", ryhma_ID);
-                        cmd.ExecuteNonQuery();
-                    }
-                    dataGridView1.Rows.RemoveAt(selectedRowIndex);
-                    ItemsToDataGrid();
-                }
-            }
+                        // Haetaan valuemember arvo
+                        int ryhmaId = (int)comboBox1.SelectedValue;
+                        mySqlConnection.Open();
+                        string query = "insert opiskelijat(etunimi, sukunimi, ryhma_ID) values (@etunimi, @sukunimi, @ryhma_ID)";
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            using (MySqlConnection conn = new MySqlConnection(connection))
-            {
-                conn.Open();
-                string query = "insert into opiskelijat(etunimi, sukunimi, ryhma_ID) values(@etunimi, @sukunimi, @ryhma_ID)";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@etunimi", txt_etunimi.Text);
-                    cmd.Parameters.AddWithValue("@sukunimi", txt_sukunimi.Text);
-                    cmd.Parameters.AddWithValue("@ryhma_ID", txt_ryhmaID.Text);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            using (MySqlConnection conn = new MySqlConnection(connection))
-            {
-                conn.Open();
-                string query = "delete from opiskelijat where etunimi = @etunimi and sukunimi = @sukunimi and ryhma_ID = @ryhma_ID";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@etunimi", textBox1.Text);
-                    cmd.Parameters.AddWithValue("@sukunimi", textBox2.Text);
-                    cmd.Parameters.AddWithValue("@ryhma_ID", textBox3.Text);
-                    cmd.ExecuteNonQuery();
-                }
-
-                ItemsToDataGrid();
-            }
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            using (MySqlConnection conn = new MySqlConnection(connection))
-            {
-                string opiskelijaryhma = string.Empty;
-                List<Opiskelija> opiskelijat = new List<Opiskelija>();
-                conn.Open();
-                string query = "select * from opiskelijaryhma where nimi = @nimi";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@nimi", comboBox1.SelectedItem.ToString());
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read()) // Assuming there's only one result
+                        using (MySqlCommand cmd = new MySqlCommand(query, mySqlConnection))
                         {
-                            opiskelijaryhma = reader["opiskelijaryhmä_ID"].ToString();
-                        }
-                    }
-                }
-
-                
-                string query2 = "select * from opiskelijat where ryhma_ID = @ID";
-                using (MySqlCommand cmd2 = new MySqlCommand(query2, conn))
-                {
-                    cmd2.Parameters.AddWithValue("@ID", opiskelijaryhma);
-                    using (MySqlDataReader reader2 = cmd2.ExecuteReader())
-                    {
-                        while (reader2.Read())
-                        {
-                            Opiskelija o = new Opiskelija
-                            {
-                                Id = reader2.GetInt32("opiskelija_id"),
-                                Etunimi = reader2.GetString("etunimi"),
-                                Sukunimi = reader2.GetString("sukunimi"),
-                                RyhmaId = reader2.GetInt32("ryhma_ID")
-                            };
-                            opiskelijat.Add(o);
+                            cmd.Parameters.AddWithValue("@etunimi", txtEtunimi.Text);
+                            cmd.Parameters.AddWithValue("@sukunimi", txtSukunimi.Text);
+                            cmd.Parameters.AddWithValue("@ryhma_ID", ryhmaId);
+                            cmd.ExecuteNonQuery();
                         }
 
+                        DataToDataGrid();
+                    }
+                }
+            }
+
+            else
+            {
+                MessageBox.Show("Syötä etunimi ja sukunimi tekstikenttiin");
+            }
+        }
+
+        private void btnPoistaOpiskelija_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                int selectedId = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["tunniste"].Value);
+
+                var confirm = MessageBox.Show("Haluatko varmasti poistaa opiskelijan?", "Vahvista poisto", MessageBoxButtons.YesNo);
+                if (confirm == DialogResult.Yes)
+                {
+                    using (MySqlConnection mySqlConnection = new MySqlConnection(connection))
+                    {
+                        mySqlConnection.Open();
+
+                        string query = "delete from opiskelijat where opiskelija_id = @id";
+                        using (MySqlCommand cmd = new MySqlCommand(query, mySqlConnection))
+                        {
+                            cmd.Parameters.AddWithValue("@id", selectedId);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
-                    dataGridView2.DataSource = opiskelijat;
+                    MessageBox.Show("Opiskelija poistettu.");
+                    DataToDataGrid();
                 }
-                
+            }
+            else
+            {
+                MessageBox.Show("Valitse opiskelija, joka poistetaan");
             }
         }
     }

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{22A5DBC3-63E8-4676-AB61-CB26A3AAC039}</ProjectGuid>
+    <ProjectGuid>{96F7FDAD-8D46-4044-AC5D-E1EA077E046B}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Opiskelijat_T2</RootNamespace>
     <AssemblyName>Opiskelijat T2</AssemblyName>
