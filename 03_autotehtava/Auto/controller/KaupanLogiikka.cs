@@ -1,4 +1,5 @@
-﻿using Autokauppa.model;
+﻿using Auto.model;
+using Autokauppa.model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,14 +27,26 @@ namespace Autokauppa.controller
             return didItGoIntoDatabase;
         }
 
-        public List<object> getAllAutoMakers() {
+        public List<AutonMerkki> getAllAutoMakers() {
 
             return dbModel.getAllAutoMakersFromDatabase();
         }
 
-        public List<object> getAutoModels(int makerId) {
+        public List<AutonMalli> getAutoModels(int makerId) 
+        {
 
             return dbModel.getAutoModelsByMakerId(makerId);
+        }
+
+        public List<Polttoaine> getAutoPolttoaine(int makerId, int modelId, int variId) 
+        {
+            return dbModel.getAutoPolttoaineId(makerId, modelId, variId);
+        }
+
+
+        public List<Varit> getAutoVari(int makerId, int modelId)
+        {
+            return dbModel.getAutoVari(makerId, modelId);
         }
     }
 }
