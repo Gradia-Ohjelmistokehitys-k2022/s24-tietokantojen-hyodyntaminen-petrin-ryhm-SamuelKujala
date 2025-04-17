@@ -23,8 +23,12 @@ namespace Autokauppa.controller
 
         public bool saveAuto(model.Auto newAuto) 
         {
-            bool didItGoIntoDatabase = dbModel.saveAutoIntoDatabase(newAuto);
-            return didItGoIntoDatabase;
+            return dbModel.saveAutoIntoDatabase(newAuto);
+        }
+
+        public bool DeleteAuto(model.Auto auto)
+        {
+            return dbModel.RemoveAutoFromDatabase(auto);
         }
 
         public List<AutonMerkki> getAllAutoMakers() {
@@ -38,15 +42,32 @@ namespace Autokauppa.controller
             return dbModel.getAutoModelsByMakerId(makerId);
         }
 
-        public List<Polttoaine> getAutoPolttoaine(int makerId, int modelId, int variId) 
+        public List<Polttoaine> getAutoPolttoaine() 
         {
-            return dbModel.getAutoPolttoaineId(makerId, modelId, variId);
+            return dbModel.getAutoPolttoaineId();
         }
 
 
-        public List<Varit> getAutoVari(int makerId, int modelId)
+        public List<Varit> getAutoVari()
         {
-            return dbModel.getAutoVari(makerId, modelId);
+            return dbModel.getAutoVari();
         }
+
+        public bool CheckCar(model.Auto auto)
+        {
+            return dbModel.CheckIfAutoExist(auto);
+        }
+
+        public List<model.Auto> GetAllAuto()
+        {
+            return dbModel.GetallAutoFromDatabase();
+        }
+
+        public List<AutonMalli> GetModelsByID(int id)
+        {
+            return dbModel.getAutoModelsById(id);
+        }
+
+
     }
 }
