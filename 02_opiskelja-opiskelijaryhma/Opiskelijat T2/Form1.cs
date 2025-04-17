@@ -59,14 +59,14 @@ namespace Opiskelijat_T2
                 {
                     while (reader.Read())
                     {
-                        Opiskelija o = new Opiskelija()
+                        Opiskelija oppilas = new Opiskelija()
                         {
                             Tunniste = reader.GetInt32("opiskelija_id"),
                             Etunimi = reader.GetString("etunimi"),
                             Sukunimi = reader.GetString("sukunimi"),
                             RyhmaId = reader.GetInt32("ryhma_ID")
                         };
-                        opiskelijat.Add(o);
+                        opiskelijat.Add(oppilas);
                     }
 
                     dataGridView1.DataSource = opiskelijat;
@@ -88,12 +88,12 @@ namespace Opiskelijat_T2
                 {
                     while (reader.Read())
                     {
-                        Ryhma o = new Ryhma()
+                        Ryhma ryhma = new Ryhma()
                         {
                             Id = reader.GetInt32("opiskelijaryhmä_ID"),
                             ryhmannimi = reader.GetString("nimi")
                         };
-                        ryhmat.Add(o);
+                        ryhmat.Add(ryhma);
                     }
                     ryhmat.Insert(0, new Ryhma { Id = -1, ryhmannimi = "--- Valitse ryhmä ---" });
                     comboBox1.DataSource = ryhmat;
@@ -115,7 +115,6 @@ namespace Opiskelijat_T2
                 {
                     using (MySqlConnection mySqlConnection = new MySqlConnection(connection))
                     {
-                        // Haetaan valuemember arvo
                         int ryhmaId = (int)comboBox1.SelectedValue;
                         mySqlConnection.Open();
                         string query = "insert opiskelijat(etunimi, sukunimi, ryhma_ID) values (@etunimi, @sukunimi, @ryhma_ID)";
