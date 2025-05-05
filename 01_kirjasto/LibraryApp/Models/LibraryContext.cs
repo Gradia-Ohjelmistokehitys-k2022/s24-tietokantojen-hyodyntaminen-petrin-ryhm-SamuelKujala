@@ -15,7 +15,6 @@ namespace LibraryApp.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            // Määritellään tietokannan yhteysstring ja tarjoaja (esim. SQL Server)
             options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Library;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");  // Käytä oikeaa yhteysmerkkijonoa
         }
 
