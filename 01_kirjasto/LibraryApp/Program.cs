@@ -20,5 +20,11 @@ public class Program
         dataBaseRepository.GetMemberHowLoan();
         // (Bonus) Hae kolmen lainatuimman kirjan kaikki tiedot konsoliin. Vihje! Tarvitset useamman Join-lauseen.
         dataBaseRepository.GetThreeMostLoanBook();
+
+        Console.WriteLine("----------------------------");
+        LibraryContext.GetBooksFromTenYears();
+        LibraryContext.GetMemberHighestAge();
+        LibraryContext.GetBookLowestAvailable();
+        LibraryContext.GetMemberWithNoLoan();
     }
 }

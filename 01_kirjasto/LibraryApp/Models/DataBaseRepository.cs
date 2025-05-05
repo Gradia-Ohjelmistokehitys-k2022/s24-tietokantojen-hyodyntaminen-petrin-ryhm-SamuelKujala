@@ -68,18 +68,16 @@ namespace LibraryApp.Models
             using var dbConnection = new SqlConnection(_connectionString);
             dbConnection.Open();
 
-            string query = "SELECT AVG(DATEDIFF(YEAR, syntymäaika, GETDATE())) as keski_ika FROM Member";
+            string query = "SELECT AVG(DATEDIFF(YEAR, syntymaaika, GETDATE())) as keski_ika FROM Member";
             using var command = new SqlCommand(query, dbConnection);
             using SqlDataReader reader = command.ExecuteReader();
 
             while (reader.Read())
             {
-                Member Member = new()
-                {
-                    keski_ika = Convert.ToInt32(reader["keski_ika"])
-                };
+                int keski_ika = Convert.ToInt32(reader["keski_ika"]);
+                
 
-                Console.WriteLine($"Asiakkaiden keski-ika: {Member.keski_ika}");
+                Console.WriteLine($"Asiakkaiden keski-ika: {keski_ika}");
             }
         }
 
